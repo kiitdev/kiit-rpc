@@ -4,9 +4,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.request.get
-import kiit.inputs.Inputs
+import kiit.call.Identity
+import kiit.inputs.Args
+import kiit.inputs.ArgsMap
 import kiit.inputs.ListMap
-import kiit.inputs.MetaMap
 import kiit.requests.Contents
 import kiit.rpc.Auth
 import kiit.rpc.Body
@@ -46,7 +47,11 @@ private fun section(title: String) {
     println("=".repeat(60))
 }
 
-private fun inputsOf(vararg pairs: Pair<String, String>): Inputs = MetaMap(ListMap(pairs.toList()))
+private fun argsOf(vararg pairs: Pair<String, String>): Args = ArgsMap(ListMap(pairs.toList()))
+
+// The caller identity every call in this sample makes as. A real service would build this once
+// at startup and reuse it, not construct a fresh one per call.
+private val callerId = Identity.api(company = "acme", area = "web", service = "gateway")
 
 // ============================================================
 // Part 1: Basic calls
@@ -57,7 +62,7 @@ private suspend fun showBasicCalls(client: HttpRpc) {
 
     // <example id="basic-get" tags="calls">
     // A GET with query params, no body. args become the URL's query string.
-    val getOutcome = client.get("https://httpbin.org/get", args = inputsOf("greeting" to "hello"))
+    val getOutcome = client.get("https://httpbin.org/get", args = argsOf("greeting" to "hello"))
     // </example>
     verify("basic-get: succeeded", getOutcome is Success)
 
@@ -98,7 +103,7 @@ private suspend fun showTypedDecode(client: HttpRpc) {
 
     // <example id="typed-executeResult" tags="typed">
     // executeResult<T> calls and decodes the body into T in one step.
-    val result = client.executeResult<HttpBinGet>(RpcRequest.get("https://httpbin.org/get"))
+    val result = client.executeResult<HttpBinGet>(RpcRequest.get("https://httpbin.org/get", callerId))
     // </example>
     result.onSuccess { println("decoded url: ${it.url}") }
     verify("typed-executeResult: decoded", result.getOrNull()?.url?.contains("httpbin.org/get") == true)
@@ -129,7 +134,7 @@ private suspend fun showPolicy() {
 
     // <example id="policy-attach" tags="policy">
     // Attach it via the policies list when constructing HttpRpc.
-    val client = HttpRpc(policies = listOf(LoggingPolicy()))
+    val client = HttpRpc(settings = RpcSettings(callerId = callerId), policies = listOf(LoggingPolicy()))
     val outcome = client.get("https://httpbin.org/get")
     // </example>
     verify("policy-attach: succeeded", outcome is Success)
@@ -144,7 +149,7 @@ private suspend fun showSettings() {
 
     // <example id="settings-base-url" tags="settings">
     // baseUrl lets every call pass a relative path instead of the full URL.
-    val client = HttpRpc(settings = RpcSettings(baseUrl = "https://httpbin.org"))
+    val client = HttpRpc(settings = RpcSettings(callerId = callerId, baseUrl = "https://httpbin.org"))
     val outcome = client.get("/get")
     // </example>
     verify("settings-base-url: succeeded", outcome is Success)
@@ -152,7 +157,8 @@ private suspend fun showSettings() {
     // <example id="options-per-call-timeout" tags="settings">
     // RpcOptions overrides RpcSettings' timeouts for just this one call. /delay/2 takes 2s to
     // respond, a 50ms request timeout fails it well before that, without affecting other calls.
-    val request = RpcRequest.get("https://httpbin.org/delay/2").copy(options = RpcOptions(requestTimeoutMillis = 50))
+    val request =
+        RpcRequest.get("https://httpbin.org/delay/2", callerId).copy(options = RpcOptions(requestTimeoutMillis = 50))
     val timedOut = client.execute(request)
     // </example>
     verify("options-per-call-timeout: failed as expected", timedOut !is Success)
@@ -170,7 +176,7 @@ private suspend fun showOwnClientAndClose() {
     // installed (built into ktor-client-core, no extra dependency needed). RpcSettings'
     // timeout/redirect fields don't apply, this client is already configured.
     val cachingClient = HttpClient(OkHttp) { install(HttpCache) }
-    val client = HttpRpc(client = cachingClient)
+    val client = HttpRpc(settings = RpcSettings(callerId = callerId), client = cachingClient)
     val outcome = client.get("https://httpbin.org/get")
     // </example>
     verify("own-client: succeeded", outcome is Success)
@@ -186,7 +192,7 @@ private suspend fun showOwnClientAndClose() {
 
 fun main() =
     runBlocking {
-        val client = HttpRpc()
+        val client = HttpRpc(settings = RpcSettings(callerId = callerId))
         showBasicCalls(client)
         showAuth(client)
         showTypedDecode(client)

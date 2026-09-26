@@ -9,8 +9,12 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kiit.call.Identity
 import kiit.rpc.RpcPolicy
 import kiit.rpc.RpcSettings
+
+/** Shared test identity, since [RpcSettings.callerId] is required. */
+val testCallerId: Identity = Identity.test("kiit", "rpc-tests")
 
 /**
  * Builds an [HttpRpc] wired to a Ktor [MockEngine], so tests never make a real network call.
@@ -21,7 +25,7 @@ import kiit.rpc.RpcSettings
  */
 @Suppress("ktlint:standard:function-signature")
 fun mockHttpRpc(
-    settings: RpcSettings = RpcSettings(),
+    settings: RpcSettings = RpcSettings(callerId = testCallerId),
     policies: List<RpcPolicy> = emptyList(),
     handler: MockRequestHandler,
 ): HttpRpc {

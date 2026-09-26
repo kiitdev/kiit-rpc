@@ -26,6 +26,7 @@ interface RpcClient {
         callerId: Identity? = null,
     ): Outcome<RpcResponse> = execute(RpcRequest.get(url, callerId ?: this.callerId, meta, args, auth))
 
+    @Suppress("LongParameterList")
     suspend fun query(
         url: String,
         meta: Meta? = null,
@@ -35,6 +36,7 @@ interface RpcClient {
         callerId: Identity? = null,
     ): Outcome<RpcResponse> = execute(RpcRequest.query(url, callerId ?: this.callerId, meta, args, auth, data))
 
+    @Suppress("LongParameterList")
     suspend fun create(
         url: String,
         meta: Meta? = null,
@@ -44,6 +46,7 @@ interface RpcClient {
         callerId: Identity? = null,
     ): Outcome<RpcResponse> = execute(RpcRequest.create(url, callerId ?: this.callerId, meta, args, auth, data))
 
+    @Suppress("LongParameterList")
     suspend fun update(
         url: String,
         meta: Meta? = null,
@@ -53,6 +56,7 @@ interface RpcClient {
         callerId: Identity? = null,
     ): Outcome<RpcResponse> = execute(RpcRequest.update(url, callerId ?: this.callerId, meta, args, auth, data))
 
+    @Suppress("LongParameterList")
     suspend fun patch(
         url: String,
         meta: Meta? = null,

@@ -58,6 +58,7 @@ data class RpcRequest(
                 auth = auth,
             )
 
+        @Suppress("LongParameterList")
         fun query(
             url: String,
             callerId: Identity,
@@ -76,6 +77,7 @@ data class RpcRequest(
                 auth = auth,
             )
 
+        @Suppress("LongParameterList")
         fun create(
             url: String,
             callerId: Identity,
@@ -94,6 +96,7 @@ data class RpcRequest(
                 auth = auth,
             )
 
+        @Suppress("LongParameterList")
         fun update(
             url: String,
             callerId: Identity,
@@ -112,6 +115,7 @@ data class RpcRequest(
                 auth = auth,
             )
 
+        @Suppress("LongParameterList")
         fun patch(
             url: String,
             callerId: Identity,

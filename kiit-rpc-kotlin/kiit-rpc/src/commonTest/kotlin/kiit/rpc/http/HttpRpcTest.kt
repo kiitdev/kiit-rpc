@@ -10,8 +10,10 @@ import kiit.call.Identity
 import kiit.codes.Err
 import kiit.codes.Invalid
 import kiit.codes.Succeeded
-import kiit.inputs.Inputs
+import kiit.inputs.Args
+import kiit.inputs.ArgsMap
 import kiit.inputs.ListMap
+import kiit.inputs.Meta
 import kiit.inputs.MetaMap
 import kiit.requests.ContentText
 import kiit.requests.ContentTypes
@@ -34,7 +36,9 @@ import io.ktor.http.HttpMethod as KtorHttpMethod
 
 private const val BASE_URL = "https://api.example.com/users"
 
-private fun inputsOf(vararg pairs: Pair<String, String>): Inputs = MetaMap(ListMap(pairs.toList()))
+private fun inputsOf(vararg pairs: Pair<String, String>): Meta = MetaMap(ListMap(pairs.toList()))
+
+private fun argsOf(vararg pairs: Pair<String, String>): Args = ArgsMap(ListMap(pairs.toList()))
 
 class HttpRpcTest {
     @Test
@@ -46,7 +50,7 @@ class HttpRpcTest {
                     captured = request
                     respond("", HttpStatusCode.OK)
                 }
-            client.get(BASE_URL, args = inputsOf("page" to "2", "size" to "10"))
+            client.get(BASE_URL, args = argsOf("page" to "2", "size" to "10"))
 
             assertEquals(KtorHttpMethod.Get, captured.method)
             assertEquals("2", captured.url.parameters["page"])
@@ -105,7 +109,8 @@ class HttpRpcTest {
     fun meta_headers_merge_with_default_headers_and_override_on_conflict() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(defaultHeaders = inputsOf("X-Client" to "kiit-rpc", "X-Env" to "prod"))
+            val settings =
+                RpcSettings(callerId = testCallerId, defaultHeaders = inputsOf("X-Client" to "kiit-rpc", "X-Env" to "prod"))
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -150,7 +155,7 @@ class HttpRpcTest {
     fun default_auth_is_used_when_a_call_supplies_none() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(defaultAuth = Auth.Bearer("default-token"))
+            val settings = RpcSettings(callerId = testCallerId, defaultAuth = Auth.Bearer("default-token"))
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -165,7 +170,7 @@ class HttpRpcTest {
     fun a_call_s_own_auth_overrides_the_default() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(defaultAuth = Auth.Bearer("default-token"))
+            val settings = RpcSettings(callerId = testCallerId, defaultAuth = Auth.Bearer("default-token"))
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -188,7 +193,7 @@ class HttpRpcTest {
                 }
             client.get(BASE_URL)
 
-            assertEquals(settings.callerId?.id, captured.headers["X-Caller-Id"])
+            assertEquals(settings.callerId.id, captured.headers["X-Caller-Id"])
         }
 
     @Test
@@ -257,7 +262,7 @@ class HttpRpcTest {
     fun a_relative_url_is_joined_onto_the_configured_base_url() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(baseUrl = "https://api.example.com")
+            val settings = RpcSettings(callerId = testCallerId, baseUrl = "https://api.example.com")
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -272,7 +277,7 @@ class HttpRpcTest {
     fun base_url_and_relative_url_join_cleanly_regardless_of_slashes() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(baseUrl = "https://api.example.com/")
+            val settings = RpcSettings(callerId = testCallerId, baseUrl = "https://api.example.com/")
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -287,7 +292,7 @@ class HttpRpcTest {
     fun an_absolute_url_is_sent_as_is_even_when_a_base_url_is_configured() =
         runTest {
             lateinit var captured: HttpRequestData
-            val settings = RpcSettings(baseUrl = "https://api.example.com")
+            val settings = RpcSettings(callerId = testCallerId, baseUrl = "https://api.example.com")
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
@@ -301,7 +306,7 @@ class HttpRpcTest {
     @Test
     fun a_request_that_exceeds_the_configured_timeout_fails() =
         runTest {
-            val settings = RpcSettings(requestTimeoutMillis = 20)
+            val settings = RpcSettings(callerId = testCallerId, requestTimeoutMillis = 20)
             val client =
                 mockHttpRpc(settings = settings) {
                     delay(200)
@@ -315,13 +320,13 @@ class HttpRpcTest {
     @Test
     fun per_call_options_override_the_client_wide_timeout() =
         runTest {
-            val settings = RpcSettings(requestTimeoutMillis = 5000)
+            val settings = RpcSettings(callerId = testCallerId, requestTimeoutMillis = 5000)
             val client =
                 mockHttpRpc(settings = settings) {
                     delay(200)
                     respond("", HttpStatusCode.OK)
                 }
-            val request = RpcRequest.get(BASE_URL).copy(options = RpcOptions(requestTimeoutMillis = 20))
+            val request = RpcRequest.get(BASE_URL, testCallerId).copy(options = RpcOptions(requestTimeoutMillis = 20))
             val outcome = client.execute(request)
 
             assertIs<Failure<*>>(outcome)
@@ -329,7 +334,7 @@ class HttpRpcTest {
 
     @Test
     fun closingAnInstanceThatNeverMadeACallIsANoOp() {
-        val client = HttpRpc(engine = MockEngine { respond("", HttpStatusCode.OK) })
+        val client = HttpRpc(settings = RpcSettings(callerId = testCallerId), engine = MockEngine { respond("", HttpStatusCode.OK) })
         client.close()
     }
 
@@ -358,7 +363,7 @@ class HttpRpcTest {
     fun aSuppliedClientIsUsedAsIsAndNotClosedByHttpRpc() =
         runTest {
             val rawClient = HttpClient(MockEngine { respond("", HttpStatusCode.OK) })
-            val client = HttpRpc(client = rawClient)
+            val client = HttpRpc(settings = RpcSettings(callerId = testCallerId), client = rawClient)
 
             val outcome = client.get(BASE_URL)
             assertIs<Success<RpcResponse>>(outcome)

@@ -173,7 +173,12 @@ class HttpRpc(
     private fun String.isAbsolute(): Boolean = startsWith("http://") || startsWith("https://")
 
     /** Order: `defaultHeaders`, then the call's own `meta` (overrides defaults), then content-type/auth/caller id. */
-    private fun mergedMeta(requestMeta: Meta, data: Body?, auth: Auth?, callerId: Identity): Meta {
+    private fun mergedMeta(
+        requestMeta: Meta,
+        data: Body?,
+        auth: Auth?,
+        callerId: Identity,
+    ): Meta {
         val merged = LinkedHashMap<String, String>()
         val defaults = settings.defaultHeaders
         defaults.keys().forEach { key -> merged[key] = defaults.get(key)?.toString() ?: "" }
