@@ -1,6 +1,6 @@
 package kiit.rpc
 
-import kiit.call.Identity
+import kiit.identity.Identity
 import kiit.inputs.Args
 import kiit.inputs.Meta
 import kiit.result.Outcome

@@ -4,7 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.request.get
-import kiit.call.Identity
+import kiit.identity.Identity
 import kiit.inputs.Args
 import kiit.inputs.ArgsMap
 import kiit.inputs.ListMap

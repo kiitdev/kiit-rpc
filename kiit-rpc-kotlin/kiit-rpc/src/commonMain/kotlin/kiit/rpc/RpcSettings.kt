@@ -1,6 +1,6 @@
 package kiit.rpc
 
-import kiit.call.Identity
+import kiit.identity.Identity
 import kiit.inputs.ListMap
 import kiit.inputs.Meta
 import kiit.inputs.MetaMap

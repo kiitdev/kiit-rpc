@@ -23,7 +23,7 @@ a PR. Talking through the approach first, what stays faithful to the original de
 should adapt to the target language's own idioms, keeps everyone's effort from being wasted, and
 gives the port a real shot at becoming an official, linked module rather than staying disconnected.
 
-kiit-rpc depends on kiit-codes, kiit-result, kiit-call, and kiit-inputs for their status taxonomy,
+kiit-rpc depends on kiit-codes, kiit-result, kiit-identity, and kiit-inputs for their status taxonomy,
 result type, and shared call/input vocabulary. A port only makes sense alongside real ports of
 those same modules in the same language, see their own CONTRIBUTING.md for the language-port
 criteria they already apply.

@@ -21,28 +21,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "kiit-rpc-kotlin"
 
-// Composite builds: kiit-call and kiit-inputs aren't published to Maven Central yet, so build
-// them from the local checkout instead. Explicit substitution rather than relying on
-// group/version matching, since the included subprojects don't set `group`/`version` as real
-// Gradle project properties (only inside their mavenPublishing { coordinates(...) } blocks).
-// Remove each block once the corresponding module is actually published.
-includeBuild("../../kiit-call/kiit-call-kotlin") {
-    dependencySubstitution {
-        substitute(module("dev.kiit:kiit-call")).using(project(":kiit-call"))
-    }
-}
-
-includeBuild("../../kiit-inputs/kiit-inputs-kotlin") {
-    dependencySubstitution {
-        substitute(module("dev.kiit:kiit-inputs")).using(project(":kiit-inputs"))
-    }
-}
-
-includeBuild("../../kiit-requests/kiit-requests-kotlin") {
-    dependencySubstitution {
-        substitute(module("dev.kiit:kiit-requests")).using(project(":kiit-requests"))
-    }
-}
+// kiit-inputs, kiit-identity, and kiit-requests are all published to Maven Central (see
+// build.gradle.kts), no composite build needed for any of them anymore.
 
 include(":kiit-rpc")
 include(":sample-kotlin")

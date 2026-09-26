@@ -9,7 +9,7 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import kiit.call.Identity
+import kiit.identity.Identity
 import kiit.rpc.RpcPolicy
 import kiit.rpc.RpcSettings
 
