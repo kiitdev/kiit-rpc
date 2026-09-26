@@ -14,8 +14,14 @@ All notable changes to kiit-rpc are documented here. Format follows
   gone, replaced by the shared `kiit.requests.Verb`.
 - `RpcRequest` implements `kiit.requests.ClientRequest`/`Request`, the shared call shape also used
   by kiit-requests' `ServerRequest` on the inbound side. Depends on `kiit-requests`
-  (`Verb`/`Version`/`Trace`/`Source`/`Content`), `kiit-call` (`Identity`), and `kiit-inputs`
-  (`Inputs`/`Meta`).
+  (`Verb`/`Version`/`Trace`/`Content`), `kiit-call` (`Identity`), and `kiit-inputs`
+  (`Meta`/`Args`).
+- `RpcRequest.callerId` is required, not optional, matching the shared `Request` base. Filled in
+  automatically from `RpcSettings.callerId` by `RpcClient`'s named methods (`get`/`query`/...),
+  overridable per call. `RpcSettings.callerId` itself is now required too, so `HttpRpc`
+  construction always has an identity to attribute calls to.
+- `RpcRequest.tags: List<Tag>` (`kiit.requests.Tag`), for correlation labels, same as
+  `ServerRequest.tags` on the inbound side.
 - `RpcResponse.data` is a `kiit.requests.Content`, not a plain `String` — binary responses come back
   as `ContentFile`/`ContentData` with their bytes intact instead of being forced through text
   decoding.
