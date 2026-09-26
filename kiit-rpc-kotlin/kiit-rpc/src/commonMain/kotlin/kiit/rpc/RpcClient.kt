@@ -1,6 +1,8 @@
 package kiit.rpc
 
-import kiit.inputs.Inputs
+import kiit.call.Identity
+import kiit.inputs.Args
+import kiit.inputs.Meta
 import kiit.result.Outcome
 
 /**
@@ -9,53 +11,62 @@ import kiit.result.Outcome
  *
  * [execute] is the only abstract method. Every named verb below is a default built on top of it,
  * so a new transport only has to implement [execute] to get the whole named-method API for free.
+ * [callerId] is this client's own default identity, used for any call that doesn't override it.
  */
 interface RpcClient {
+    val callerId: Identity
+
     suspend fun execute(request: RpcRequest): Outcome<RpcResponse>
 
     suspend fun get(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.get(url, meta, args, auth))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.get(url, callerId ?: this.callerId, meta, args, auth))
 
     suspend fun query(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
         data: Body? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.query(url, meta, args, auth, data))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.query(url, callerId ?: this.callerId, meta, args, auth, data))
 
     suspend fun create(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
         data: Body? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.create(url, meta, args, auth, data))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.create(url, callerId ?: this.callerId, meta, args, auth, data))
 
     suspend fun update(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
         data: Body? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.update(url, meta, args, auth, data))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.update(url, callerId ?: this.callerId, meta, args, auth, data))
 
     suspend fun patch(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
         data: Body? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.patch(url, meta, args, auth, data))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.patch(url, callerId ?: this.callerId, meta, args, auth, data))
 
     suspend fun delete(
         url: String,
-        meta: Inputs? = null,
-        args: Inputs? = null,
+        meta: Meta? = null,
+        args: Args? = null,
         auth: Auth? = null,
-    ): Outcome<RpcResponse> = execute(RpcRequest.delete(url, meta, args, auth))
+        callerId: Identity? = null,
+    ): Outcome<RpcResponse> = execute(RpcRequest.delete(url, callerId ?: this.callerId, meta, args, auth))
 }

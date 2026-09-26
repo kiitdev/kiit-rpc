@@ -7,10 +7,10 @@ import kiit.inputs.MetaMap
 
 /** Client-wide config for [kiit.rpc.http.HttpRpc]. Anything not covered here is reachable via its `engine` param. */
 data class RpcSettings(
+    /** Default identity for every call this client makes. Required, see [RpcRequest.callerId]. */
+    val callerId: Identity,
     /** Prefixed onto any call `url` that isn't already absolute. An absolute `url` is sent as-is. */
     val baseUrl: String? = null,
-    /** Sent as a header on every call. Not per-call overridable, identity doesn't vary call to call. */
-    val callerId: Identity? = null,
     /** Used when a call's own [RpcRequest.auth] is null. */
     val defaultAuth: Auth? = null,
     val defaultHeaders: Inputs = MetaMap(ListMap()),
