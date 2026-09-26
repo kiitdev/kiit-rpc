@@ -59,6 +59,20 @@ class HttpRpcTest {
         }
 
     @Test
+    fun get_sends_a_repeated_query_param_as_multiple_values_not_just_the_last() =
+        runTest {
+            lateinit var captured: HttpRequestData
+            val client =
+                mockHttpRpc { request ->
+                    captured = request
+                    respond("", HttpStatusCode.OK)
+                }
+            client.get(BASE_URL, args = argsOf("tag" to "a", "tag" to "b"))
+
+            assertEquals(listOf("a", "b"), captured.url.parameters.getAll("tag"))
+        }
+
+    @Test
     fun create_sends_post_with_json_content_type_and_body() =
         runTest {
             lateinit var captured: HttpRequestData
