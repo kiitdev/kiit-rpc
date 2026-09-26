@@ -56,23 +56,31 @@ to add any of them separately.
 **A basic call:**
 
 ```kotlin
+import kiit.call.Identity
 import kiit.requests.Contents
+import kiit.rpc.RpcSettings
 import kiit.rpc.http.HttpRpc
 
-val client = HttpRpc()
+val callerId = Identity.api(company = "acme", area = "web", service = "gateway")
+val client = HttpRpc(settings = RpcSettings(callerId = callerId))
 val outcome = client.get("https://httpbin.org/get")
 
 outcome.onSuccess { response -> println(Contents.toText(response.data)) }
     .onFailure { err -> println("failed: ${err.message}") }
 ```
 
-Query params (`args`) and headers (`meta`) are `kiit.inputs.Inputs`, not a plain `Map`:
+`callerId` is required, not optional: every `RpcRequest` carries one, so "who made this call" is
+never silently unset. `HttpRpc`'s named methods (`get`/`query`/`create`/...) fill it in from
+`RpcSettings.callerId` automatically, so you don't pass it per call, only when constructing the
+client (or an `RpcRequest` directly, or overriding it for one specific call).
+
+Query params (`args`) are `kiit.inputs.Args`, headers (`meta`) are `kiit.inputs.Meta`, not a plain `Map`:
 
 ```kotlin
+import kiit.inputs.ArgsMap
 import kiit.inputs.ListMap
-import kiit.inputs.MetaMap
 
-val args = MetaMap(ListMap(listOf("q" to "hello")))
+val args = ArgsMap(ListMap(listOf("q" to "hello")))
 client.get("https://httpbin.org/get", args = args)
 ```
 
@@ -87,7 +95,7 @@ including auth, a typed call, a logging policy, and per-call settings.
 | **`RpcRequest`** | The caller-facing, outbound mirror of kiit-requests' `ServerRequest`, implementing the shared `kiit.requests.ClientRequest`/`Request` interfaces: `verb`/`url`/`meta`/`args`/`data`/`auth`/`version`/`trace`/`source`/`options`. A flat `url`, not the area/name/action convention, since an outbound call isn't necessarily hitting a kiit API. |
 | **`RpcResponse`** | `status`/`data`/`meta`. `data` is a `kiit.requests.Content` (`ContentText`/`ContentFile`/`ContentData`), never forced through text decoding, so a binary response comes back with its bytes intact. `meta` is a `kiit.inputs.Meta`, preserving every value for a repeated header like `Set-Cookie`. |
 | **`Outcome<T>`** | `Result<T, Err>` from kiit-result. Every call returns `Outcome<RpcResponse>`, carrying a resolved `Status`. On failure, `Err.ref` carries the original `RpcResponse`, so nothing is lost even when the status alone doesn't say enough. |
-| **`RpcSettings`** | Client-wide config: `baseUrl`, `defaultHeaders`, `defaultAuth`, `callerId`, timeouts, `followRedirects`, `parseStatusFromBody`. |
+| **`RpcSettings`** | Client-wide config: `callerId`, `baseUrl`, `defaultMeta`, `defaultAuth`, timeouts, `followRedirects`, `parseStatusFromBody`. |
 | **`RpcOptions`** | Per-call override of `RpcSettings`' timeouts, via `RpcRequest.options`. |
 | **`Policy<I, O>`** (`RpcPolicy` = `Policy<RpcRequest, RpcResponse>`) | Wraps a call: retry, log, rewrite the request, short-circuit. A list of them chains together, first one outermost. Sees the request after `RpcSettings`' defaults are merged in, the same way Ktor's own `Logging` plugin sees a request after `DefaultRequest` resolves. |
 | **`Serializer<T>`** | Encode/decode abstraction behind typed calls. `KotlinxSerializer` is the default, bring your own for Moshi/Gson/Jackson. |

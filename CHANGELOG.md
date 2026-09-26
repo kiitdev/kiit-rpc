@@ -26,7 +26,7 @@ All notable changes to kiit-rpc are documented here. Format follows
   off by default), then the raw HTTP status code as a last resort.
 - A failed call's `Err.ref` carries the original `RpcResponse`, so a caller isn't limited to just
   the resolved `Status` on failure.
-- `RpcSettings.baseUrl`/`defaultAuth`/`callerId`/`defaultHeaders`, and `RpcRequest.options`
+- `RpcSettings.baseUrl`/`defaultAuth`/`callerId`/`defaultMeta`, and `RpcRequest.options`
   (`RpcOptions`) for a per-call timeout override.
 - `HttpRpc` implements `AutoCloseable`. `close()` only releases a client it built itself, never
   one supplied via the new `client` constructor param.

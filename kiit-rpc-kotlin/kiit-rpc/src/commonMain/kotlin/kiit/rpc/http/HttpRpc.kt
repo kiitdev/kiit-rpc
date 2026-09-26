@@ -115,7 +115,7 @@ class HttpRpc(
     /**
      * Merges [RpcSettings]' client-wide defaults into [request] before the policy chain runs, so
      * a [RpcPolicy] sees the almost-final request: base URL already joined with query args,
-     * headers already merged with `defaultHeaders`/content-type/auth/caller id. This matches
+     * headers already merged with `defaultMeta`/content-type/auth/caller id. This matches
      * how Ktor's own `Logging` plugin sees a request, after `DefaultRequest` resolves, not before.
      */
     private fun resolveRequest(request: RpcRequest): RpcRequest {
@@ -172,7 +172,7 @@ class HttpRpc(
 
     private fun String.isAbsolute(): Boolean = startsWith("http://") || startsWith("https://")
 
-    /** Order: `defaultHeaders`, then the call's own `meta` (overrides defaults), then content-type/auth/caller id. */
+    /** Order: `defaultMeta`, then the call's own `meta` (overrides defaults), then content-type/auth/caller id. */
     private fun mergedMeta(
         requestMeta: Meta,
         data: Body?,
@@ -180,7 +180,7 @@ class HttpRpc(
         callerId: Identity,
     ): Meta {
         val merged = LinkedHashMap<String, String>()
-        val defaults = settings.defaultHeaders
+        val defaults = settings.defaultMeta
         defaults.keys().forEach { key -> merged[key] = defaults.get(key)?.toString() ?: "" }
         requestMeta.keys().forEach { key -> merged[key] = requestMeta.get(key)?.toString() ?: "" }
         contentTypeFor(data)?.let { merged[HttpHeaders.ContentType] = it }

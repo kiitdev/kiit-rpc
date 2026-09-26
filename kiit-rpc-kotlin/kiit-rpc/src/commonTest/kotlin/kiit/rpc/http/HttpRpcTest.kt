@@ -110,7 +110,7 @@ class HttpRpcTest {
         runTest {
             lateinit var captured: HttpRequestData
             val settings =
-                RpcSettings(callerId = testCallerId, defaultHeaders = inputsOf("X-Client" to "kiit-rpc", "X-Env" to "prod"))
+                RpcSettings(callerId = testCallerId, defaultMeta = inputsOf("X-Client" to "kiit-rpc", "X-Env" to "prod"))
             val client =
                 mockHttpRpc(settings = settings) { request ->
                     captured = request
