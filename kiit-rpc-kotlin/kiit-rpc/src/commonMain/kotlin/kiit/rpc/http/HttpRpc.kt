@@ -20,10 +20,13 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.content.TextContent
 import io.ktor.http.encodeURLParameter
+import kiit.call.Identity
 import kiit.codes.Err
 import kiit.codes.Failed
 import kiit.codes.Passed
 import kiit.codes.Unserved
+import kiit.inputs.Args
+import kiit.inputs.ArgsMap
 import kiit.inputs.Inputs
 import kiit.inputs.ListMap
 import kiit.inputs.Meta
@@ -73,12 +76,14 @@ private const val CALLER_ID_HEADER = "X-Caller-Id"
  * the caller's app, so its lifecycle stays the caller's responsibility.
  */
 class HttpRpc(
-    private val settings: RpcSettings = RpcSettings(),
+    private val settings: RpcSettings,
     private val policies: List<RpcPolicy> = emptyList(),
     statusConverter: StatusConverter? = null,
     private val engine: HttpClientEngine? = null,
     client: HttpClient? = null,
 ) : RpcClient, AutoCloseable {
+    override val callerId: Identity get() = settings.callerId
+
     private val statusConverter: StatusConverter =
         statusConverter ?: KiitStatusConverter(parseStatusFromBody = settings.parseStatusFromBody)
 
@@ -117,8 +122,8 @@ class HttpRpc(
     private fun resolveRequest(request: RpcRequest): RpcRequest {
         val url = buildUrl(request.url, request.args)
         val auth = request.auth ?: settings.defaultAuth
-        val meta = mergedMeta(request.meta, request.data, auth)
-        return request.copy(url = url, args = MetaMap(ListMap()), meta = meta, auth = auth)
+        val meta = mergedMeta(request.meta, request.data, auth, request.callerId)
+        return request.copy(url = url, args = ArgsMap(ListMap()), meta = meta, auth = auth)
     }
 
     override suspend fun execute(request: RpcRequest): Outcome<RpcResponse> {
