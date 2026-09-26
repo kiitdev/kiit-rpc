@@ -202,18 +202,20 @@ works on OkHttp (JVM/Android).
 ```kotlin
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import kiit.rpc.RpcSettings
 import kiit.rpc.http.HttpRpc
 
 // engine: swap just the engine's own config, RpcSettings' timeouts/redirects still apply on top
 // of it. OkHttp is already on the classpath, kiit-rpc's own JVM/Android target depends on it.
-val withCustomEngine = HttpRpc(engine = OkHttp.create { /* e.g. config.connectionPool(...) */ })
+val withCustomEngine =
+    HttpRpc(settings = RpcSettings(callerId = callerId), engine = OkHttp.create { /* e.g. config.connectionPool(...) */ })
 
 // client: a fully pre-built HttpClient, used exactly as given — e.g. with Ktor's own HttpCache
 // plugin installed (built into ktor-client-core, no extra dependency needed), or one client
 // shared across several libraries. RpcSettings' timeout/redirect fields don't apply here,
 // you've already configured the client yourself.
 val cachingClient = HttpClient(OkHttp) { install(HttpCache) }
-val withOwnClient = HttpRpc(client = cachingClient)
+val withOwnClient = HttpRpc(settings = RpcSettings(callerId = callerId), client = cachingClient)
 ```
 
 ```kotlin
