@@ -92,7 +92,7 @@ including auth, a typed call, a logging policy, and per-call settings.
 | Term | What it is |
 |---|---|
 | **`RpcClient`** (`kiit.rpc`) | The public contract: `execute` is the one abstract method, `get`/`query`/`create`/`update`/`patch`/`delete` are defaults built on top of it. `kiit.rpc.http.HttpRpc` is the Ktor-backed implementation. |
-| **`RpcRequest`** | The caller-facing, outbound mirror of kiit-requests' `ServerRequest`, implementing the shared `kiit.requests.ClientRequest`/`Request` interfaces: `verb`/`url`/`meta`/`args`/`data`/`auth`/`version`/`trace`/`source`/`options`. A flat `url`, not the area/name/action convention, since an outbound call isn't necessarily hitting a kiit API. |
+| **`RpcRequest`** | The caller-facing, outbound mirror of kiit-requests' `ServerRequest`, implementing the shared `kiit.requests.ClientRequest`/`Request` interfaces: `verb`/`url`/`callerId`/`meta`/`args`/`data`/`auth`/`version`/`trace`/`tags`/`options`. A flat `url`, not the area/name/action convention, since an outbound call isn't necessarily hitting a kiit API. `callerId` is required, usually filled in from `RpcSettings.callerId` rather than set by hand per call. |
 | **`RpcResponse`** | `status`/`data`/`meta`. `data` is a `kiit.requests.Content` (`ContentText`/`ContentFile`/`ContentData`), never forced through text decoding, so a binary response comes back with its bytes intact. `meta` is a `kiit.inputs.Meta`, preserving every value for a repeated header like `Set-Cookie`. |
 | **`Outcome<T>`** | `Result<T, Err>` from kiit-result. Every call returns `Outcome<RpcResponse>`, carrying a resolved `Status`. On failure, `Err.ref` carries the original `RpcResponse`, so nothing is lost even when the status alone doesn't say enough. |
 | **`RpcSettings`** | Client-wide config: `callerId`, `baseUrl`, `defaultMeta`, `defaultAuth`, timeouts, `followRedirects`, `parseStatusFromBody`. |
@@ -124,7 +124,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(val id: Int, val name: String)
 
-val result = client.executeResult<User>(RpcRequest.get("https://api.example.com/users/1"))
+val result = client.executeResult<User>(RpcRequest.get("https://api.example.com/users/1", callerId))
 ```
 
 `executeResult` returns a `Try<T>` (`Result<T, Throwable>`), `executeOutcome` returns an
@@ -145,6 +145,7 @@ import kiit.result.Outcome
 import kiit.rpc.RpcPolicy
 import kiit.rpc.RpcRequest
 import kiit.rpc.RpcResponse
+import kiit.rpc.RpcSettings
 import kiit.rpc.http.HttpRpc
 
 class LoggingPolicy : RpcPolicy {
@@ -159,7 +160,7 @@ class LoggingPolicy : RpcPolicy {
     }
 }
 
-val client = HttpRpc(policies = listOf(LoggingPolicy()))
+val client = HttpRpc(settings = RpcSettings(callerId = callerId), policies = listOf(LoggingPolicy()))
 ```
 
 The first policy in the list runs outermost. One that never calls `operation` short-circuits the
@@ -174,7 +175,7 @@ all need that power.
 import kiit.rpc.RpcSettings
 import kiit.rpc.http.HttpRpc
 
-val client = HttpRpc(settings = RpcSettings(baseUrl = "https://api.example.com"))
+val client = HttpRpc(settings = RpcSettings(callerId = callerId, baseUrl = "https://api.example.com"))
 val outcome = client.get("/users")
 ```
 
@@ -184,7 +185,7 @@ val outcome = client.get("/users")
 import kiit.rpc.RpcOptions
 import kiit.rpc.RpcRequest
 
-val request = RpcRequest.get("https://api.example.com/slow-endpoint")
+val request = RpcRequest.get("https://api.example.com/slow-endpoint", callerId)
     .copy(options = RpcOptions(requestTimeoutMillis = 30_000))
 val outcome = client.execute(request)
 ```
