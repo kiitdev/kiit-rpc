@@ -62,10 +62,9 @@ kotlin {
             api("dev.kiit:kiit-identity:0.8.0")
 
             // RpcRequest/RpcResponse expose Verb/Version/Trace/Content/ClientRequest directly
-            // (kiit-requests, which now owns the shared call-shape vocabulary). Resolved from
-            // the local checkout via the composite build in settings.gradle.kts until it's
-            // actually published.
-            api("dev.kiit:kiit-requests:0.0.0")
+            // (kiit-requests, which now owns the shared call-shape vocabulary). Published to
+            // Maven Central, no composite build needed.
+            api("dev.kiit:kiit-requests:0.8.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
