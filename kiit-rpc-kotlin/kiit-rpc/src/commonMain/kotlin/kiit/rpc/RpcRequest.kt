@@ -34,7 +34,7 @@ data class RpcRequest(
     override val trace: Trace? = null,
     override val requestId: String = Uuid.random().toString(),
     override val timestamp: Instant = Clock.System.now(),
-    override val source: Source = Source.API,
+    override val source: Source = Source.Api,
     val options: RpcOptions? = null,
 ) : ClientRequest {
     companion object {

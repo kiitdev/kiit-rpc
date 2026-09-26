@@ -318,6 +318,7 @@ class HttpRpc(
             Verb.Query -> KtorHttpMethod.Post
             Verb.Create -> KtorHttpMethod.Post
             Verb.Update -> KtorHttpMethod.Put
+            Verb.Upsert -> KtorHttpMethod.Put
             Verb.Patch -> KtorHttpMethod.Patch
             Verb.Delete -> KtorHttpMethod.Delete
             Verb.Execute -> KtorHttpMethod.Post
