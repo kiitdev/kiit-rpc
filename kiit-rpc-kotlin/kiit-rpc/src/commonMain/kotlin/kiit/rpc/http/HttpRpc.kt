@@ -27,7 +27,6 @@ import kiit.codes.Passed
 import kiit.codes.Unserved
 import kiit.inputs.Args
 import kiit.inputs.ArgsMap
-import kiit.inputs.Inputs
 import kiit.inputs.ListMap
 import kiit.inputs.Meta
 import kiit.inputs.MetaMap
@@ -157,7 +156,7 @@ class HttpRpc(
             Failure(Err.ex(e), Unserved.UNEXPECTED)
         }
 
-    private fun buildUrl(url: String, args: Inputs): String {
+    private fun buildUrl(url: String, args: Args): String {
         val resolved = resolveUrl(url)
         if (args.keys().isEmpty()) return resolved
         val builder = URLBuilder(resolved)
@@ -174,14 +173,14 @@ class HttpRpc(
     private fun String.isAbsolute(): Boolean = startsWith("http://") || startsWith("https://")
 
     /** Order: `defaultHeaders`, then the call's own `meta` (overrides defaults), then content-type/auth/caller id. */
-    private fun mergedMeta(requestMeta: Inputs, data: Body?, auth: Auth?): Inputs {
+    private fun mergedMeta(requestMeta: Meta, data: Body?, auth: Auth?, callerId: Identity): Meta {
         val merged = LinkedHashMap<String, String>()
         val defaults = settings.defaultHeaders
         defaults.keys().forEach { key -> merged[key] = defaults.get(key)?.toString() ?: "" }
         requestMeta.keys().forEach { key -> merged[key] = requestMeta.get(key)?.toString() ?: "" }
         contentTypeFor(data)?.let { merged[HttpHeaders.ContentType] = it }
         authHeader(auth)?.let { (key, value) -> merged[key] = value }
-        settings.callerId?.let { merged[CALLER_ID_HEADER] = it.id }
+        merged[CALLER_ID_HEADER] = callerId.id
         return MetaMap(ListMap(merged.toList()))
     }
 
