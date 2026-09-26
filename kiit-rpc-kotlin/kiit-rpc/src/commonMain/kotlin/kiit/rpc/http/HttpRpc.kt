@@ -160,7 +160,7 @@ class HttpRpc(
         val resolved = resolveUrl(url)
         if (args.keys().isEmpty()) return resolved
         val builder = URLBuilder(resolved)
-        args.keys().forEach { key -> builder.parameters.append(key, args.get(key)?.toString() ?: "") }
+        args.keys().forEach { key -> args.getAll(key).forEach { value -> builder.parameters.append(key, value) } }
         return builder.buildString()
     }
 
