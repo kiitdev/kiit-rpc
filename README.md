@@ -49,14 +49,14 @@ dependencies {
 }
 ```
 
-`kiit-rpc` depends on `dev.kiit:kiit-codes`, `dev.kiit:kiit-result`, `dev.kiit:kiit-call`,
+`kiit-rpc` depends on `dev.kiit:kiit-codes`, `dev.kiit:kiit-result`, `dev.kiit:kiit-identity`,
 `dev.kiit:kiit-inputs`, and `dev.kiit:kiit-requests` transitively (all `api`), so you don't need
 to add any of them separately.
 
 **A basic call:**
 
 ```kotlin
-import kiit.call.Identity
+import kiit.identity.Identity
 import kiit.requests.Contents
 import kiit.rpc.RpcSettings
 import kiit.rpc.http.HttpRpc
@@ -252,7 +252,7 @@ be shared elsewhere in your app.
 
 - Kotlin Multiplatform
 - JVM, Android, iOS (arm64, simulator arm64, x64)
-- Depends on `dev.kiit:kiit-codes`, `dev.kiit:kiit-result`, `dev.kiit:kiit-call`,
+- Depends on `dev.kiit:kiit-codes`, `dev.kiit:kiit-result`, `dev.kiit:kiit-identity`,
   `dev.kiit:kiit-inputs`, and `dev.kiit:kiit-requests` (all transitively available to consumers via `api`)
 
 ## License

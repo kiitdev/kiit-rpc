@@ -14,7 +14,7 @@ plugins {
 // Single source of truth for the published version — mirrors kiit-codes/kiit-result. Left as a
 // placeholder: the starting version and first publish target (GitHub Packages pre-release vs.
 // Maven Central stable) haven't been decided yet.
-val libraryVersion = "0.0.0"
+val libraryVersion = "0.8.0"
 
 kotlin {
     jvm {
@@ -54,13 +54,17 @@ kotlin {
             api("dev.kiit:kiit-codes:1.1.0")
             api("dev.kiit:kiit-result:1.0.2")
 
-            // RpcSettings exposes Identity directly (kiit-call). RpcRequest/RpcResponse expose
-            // Inputs/Meta directly (kiit-inputs), and Verb/Version/Trace/Content/ClientRequest
-            // directly (kiit-requests, which now owns the shared call-shape vocabulary). Resolved
-            // from the local checkout via the composite builds in settings.gradle.kts until all
-            // three are actually published.
-            api("dev.kiit:kiit-call:0.0.0")
-            api("dev.kiit:kiit-inputs:0.0.0")
+            // Inputs/Meta are published to Maven Central, no composite build needed.
+            api("dev.kiit:kiit-inputs:0.8.0")
+
+            // RpcSettings exposes Identity directly. Published to Maven Central, no composite
+            // build needed.
+            api("dev.kiit:kiit-identity:0.8.0")
+
+            // RpcRequest/RpcResponse expose Verb/Version/Trace/Content/ClientRequest directly
+            // (kiit-requests, which now owns the shared call-shape vocabulary). Resolved from
+            // the local checkout via the composite build in settings.gradle.kts until it's
+            // actually published.
             api("dev.kiit:kiit-requests:0.0.0")
         }
         commonTest.dependencies {

@@ -6,10 +6,10 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
-import kiit.call.Identity
 import kiit.codes.Err
 import kiit.codes.Invalid
 import kiit.codes.Succeeded
+import kiit.identity.Identity
 import kiit.inputs.Args
 import kiit.inputs.ArgsMap
 import kiit.inputs.ListMap
